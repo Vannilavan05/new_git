@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYSTEM // AWAKENED</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Orbitron:wght@400;600;700;900&display=swap');
+
+  :root {
+    --bg-void: #020510;
+    --bg-deep: #050c1a;
+    --bg-panel: #080f20;
+    --bg-card: #0b1428;
+    --bg-elevated: #0e1a30;
+    --border-dim: rgba(30,80,180,0.2);
+    --border-glow: rgba(50,130,255,0.4);
+    --border-bright: rgba(100,180,255,0.6);
+    --text-primary: #c8deff;
+    --text-secondary: #6a8ab8;
+    --text-dim: #2a4060;
+    --accent-blue: #1a6aff;
+    --accent-cyan: #00c8ff;
+    --accent-gold: #ffcc44;
+    --accent-purple: #8844ff;
+    --rank-e: #6aaa6a;
+    --rank-d: #6ab4ff;
+    --rank-c: #aa88ff;
+    --rank-b: #ffaa44;
+    --rank-a: #ff6644;
+    --rank-s: #ffcc00;
+    --rank-ss: #ff44aa;
+    --glow-blue: 0 0 20px rgba(26,106,255,0.4), 0 0 40px rgba(26,106,255,0.15);
+    --glow-gold: 0 0 20px rgba(255,204,68,0.5), 0 0 40px rgba(255,204,68,0.2);
+    --glow-red: 0 0 20px rgba(255,60,60,0.4), 0 0 40px rgba(255,60,60,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg-void);
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(10,40,120,0.3) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 60% at 80% 90%, rgba(60,20,140,0.2) 0%, transparent 60%),
+      radial-gradient(ellipse 80% 50% at 50% 50%, rgba(5,15,40,0.5) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Grid scanlines */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,50,150,0.03) 3px, rgba(0,50,150,0.03) 4px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  /* ─── HEADER ─── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border: 1px solid var(--border-dim);
+    background: linear-gradient(135deg, rgba(10,30,80,0.8), rgba(5,10,25,0.9));
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-blue), var(--accent-cyan), transparent);
+    animation: scanH 3s linear infinite;
+  }
+  @keyframes scanH { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .system-logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--accent-cyan);
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px rgba(0,200,255,0.6);
+  }
+  .system-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--accent-blue);
+    border: 1px solid var(--border-glow);
+    padding: 2px 8px;
+    letter-spacing: 2px;
+    animation: pulse-border 2s ease-in-out infinite;
+  }
+  @keyframes pulse-border {
+    0%,100% { border-color: rgba(50,130,255,0.4); }
+    50% { border-color: rgba(50,130,255,0.8); box-shadow: 0 0 8px rgba(50,130,255,0.3); }
+  }
+
+  .player-rank-badge {
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    font-size: 28px;
+    padding: 8px 20px;
+    border: 2px solid;
+    transition: all 0.5s ease;
+    text-shadow: var(--glow-gold);
+  }
+
+  /* ─── LEVEL / XP BAR ─── */
+  .level-section {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dim);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .level-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .level-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    line-height: 1;
+    text-shadow: 0 0 30px rgba(0,200,255,0.5);
+  }
+  .level-label { font-size: 13px; color: var(--text-secondary); letter-spacing: 3px; }
+  .xp-info { text-align: right; }
+  .xp-num { font-family: 'Share Tech Mono', monospace; font-size: 16px; color: var(--accent-gold); }
+  .xp-label { font-size: 12px; color: var(--text-secondary); letter-spacing: 2px; }
+
+  .xp-bar-track {
+    height: 8px;
+    background: rgba(10,30,80,0.8);
+    border: 1px solid var(--border-dim);
+    overflow: hidden;
+    position: relative;
+  }
+  .xp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+    box-shadow: 0 0 10px rgba(0,200,255,0.6);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+  .xp-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 20px; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4));
+    animation: shimmer 2s ease-in-out infinite;
+  }
+  @keyframes shimmer { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+  /* ─── GRID LAYOUT ─── */
+  .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .full-width { grid-column: 1 / -1; }
+  @media(max-width:700px) { .main-grid { grid-template-columns: 1fr; } }
+
+  /* ─── PANEL ─── */
+  .panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-dim);
+    padding: 20px;
+    position: relative;
+    transition: border-color 0.3s;
+  }
+  .panel:hover { border-color: var(--border-glow); }
+  .panel-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent-blue);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel-title::before {
+    content: '';
+    display: inline-block;
+    width: 3px; height: 14px;
+    background: var(--accent-blue);
+    box-shadow: 0 0 8px var(--accent-blue);
+  }
+
+  /* ─── STAT BARS ─── */
+  .stat-row { margin-bottom: 14px; }
+  .stat-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .stat-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+  }
+  .stat-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .stat-track {
+    height: 5px;
+    background: rgba(10,30,80,0.9);
+    border: 1px solid rgba(30,60,120,0.4);
+    overflow: hidden;
+  }
+  .stat-fill {
+    height: 100%;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+  .stat-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 4px; height: 100%;
+    background: rgba(255,255,255,0.8);
+  }
+
+  /* Stat colors */
+  .stat-str .stat-fill { background: linear-gradient(90deg, #8B0000, #ff4444); box-shadow: 0 0 6px rgba(255,60,60,0.5); }
+  .stat-str .stat-value { color: #ff6666; }
+  .stat-vit .stat-fill { background: linear-gradient(90deg, #005500, #44ff88); box-shadow: 0 0 6px rgba(60,255,100,0.5); }
+  .stat-vit .stat-value { color: #55ff88; }
+  .stat-agi .stat-fill { background: linear-gradient(90deg, #005555, #00eeff); box-shadow: 0 0 6px rgba(0,230,255,0.5); }
+  .stat-agi .stat-value { color: #00ddff; }
+  .stat-int .stat-fill { background: linear-gradient(90deg, #330088, #aa66ff); box-shadow: 0 0 6px rgba(150,80,255,0.5); }
+  .stat-int .stat-value { color: #bb88ff; }
+  .stat-per .stat-fill { background: linear-gradient(90deg, #883300, #ffaa00); box-shadow: 0 0 6px rgba(255,160,0,0.5); }
+  .stat-per .stat-value { color: #ffbb44; }
+
+  /* ─── STAT CONTROLS ─── */
+  .stat-controls { display: flex; gap: 6px; margin-top: 4px; }
+  .stat-btn {
+    background: rgba(10,30,80,0.8);
+    border: 1px solid var(--border-dim);
+    color: var(--text-secondary);
+    width: 26px; height: 20px;
+    font-size: 14px; line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    font-family: 'Rajdhani', sans-serif;
+  }
+  .stat-btn:hover { border-color: var(--accent-blue); color: var(--accent-cyan); background: rgba(20,60,160,0.4); }
+  .stat-btn:active { transform: scale(0.92); }
+
+  /* ─── QUESTS ─── */
+  .quest-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid var(--border-dim);
+    background: var(--bg-card);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .quest-item:hover { border-color: var(--border-glow); background: var(--bg-elevated); }
+  .quest-item.completed { opacity: 0.5; }
+  .quest-item.completed .quest-name { text-decoration: line-through; }
+  .quest-check {
+    width: 18px; height: 18px;
+    border: 1px solid var(--border-glow);
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s;
+    font-size: 10px;
+  }
+  .quest-item.completed .quest-check {
+    background: var(--accent-blue);
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 8px rgba(0,200,255,0.4);
+  }
+  .quest-name { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+  .quest-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; font-family: 'Share Tech Mono', monospace; }
+  .quest-xp { margin-left: auto; font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--accent-gold); white-space: nowrap; flex-shrink: 0; }
+  .quest-tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 6px;
+    border: 1px solid;
+    letter-spacing: 1px;
+    font-family: 'Orbitron', monospace;
+  }
+  .tag-fitness { border-color: #ff4444; color: #ff6666; }
+  .tag-study { border-color: #aa66ff; color: #cc88ff; }
+  .tag-habit { border-color: #00ddff; color: #44eeff; }
+
+  /* Add quest form */
+  .add-quest-form {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .sys-input {
+    background: rgba(5,15,40,0.9);
+    border: 1px solid var(--border-dim);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .sys-input:focus { border-color: var(--accent-blue); box-shadow: 0 0 8px rgba(26,106,255,0.2); }
+  .sys-input::placeholder { color: var(--text-dim); }
+  .sys-select { background: rgba(5,15,40,0.9); border: 1px solid var(--border-dim); color: var(--text-secondary); padding: 8px 10px; font-family: 'Rajdhani', sans-serif; font-size: 13px; outline: none; cursor: pointer; }
+  .sys-btn {
+    background: rgba(26,106,255,0.15);
+    border: 1px solid var(--accent-blue);
+    color: var(--accent-cyan);
+    padding: 8px 16px;
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: all 0.2s;
+  }
+  .sys-btn:hover { background: rgba(26,106,255,0.3); box-shadow: 0 0 12px rgba(26,106,255,0.3); }
+  .sys-btn:active { transform: scale(0.97); }
+  .sys-btn.danger { border-color: #ff4444; color: #ff6666; background: rgba(255,60,60,0.1); }
+  .sys-btn.danger:hover { background: rgba(255,60,60,0.25); box-shadow: 0 0 12px rgba(255,60,60,0.3); }
+
+  /* ─── RANK DISPLAY ─── */
+  .rank-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .rank-box {
+    border: 1px solid var(--border-dim);
+    padding: 10px 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    background: var(--bg-card);
+  }
+  .rank-box.active {
+    border-width: 2px;
+    transform: scale(1.05);
+  }
+  .rank-letter {
+    font-family: 'Orbitron', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    display: block;
+    line-height: 1.2;
+  }
+  .rank-label { font-size: 9px; color: var(--text-dim); letter-spacing: 1px; margin-top: 2px; }
+
+  /* ─── LOG ─── */
+  .activity-log { max-height: 220px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--accent-blue) transparent; }
+  .log-entry {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(30,60,120,0.15);
+    font-size: 13px;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  .log-time { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
+  .log-icon { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .log-text { color: var(--text-secondary); flex: 1; }
+  .log-xp { font-family: 'Share Tech Mono', monospace; color: var(--accent-gold); font-size: 12px; flex-shrink: 0; }
+
+  /* ─── NOTIFICATION ─── */
+  .notif {
+    position: fixed;
+    top: 20px; left: 50%; transform: translateX(-50%);
+    background: rgba(5,15,40,0.97);
+    border: 1px solid var(--accent-cyan);
+    box-shadow: var(--glow-blue), 0 4px 30px rgba(0,0,0,0.5);
+    padding: 16px 28px;
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    color: var(--accent-cyan);
+    letter-spacing: 2px;
+    text-align: center;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .notif.show { opacity: 1; }
+
+  /* ─── DAILY HABITS ─── */
+  .habit-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border: 1px solid var(--border-dim);
+    background: var(--bg-card);
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .habit-row:hover { border-color: var(--border-glow); }
+  .habit-row.done { border-color: rgba(0,200,255,0.3); background: rgba(0,50,120,0.2); }
+  .habit-name { font-size: 15px; font-weight: 600; }
+  .habit-streak { font-family: 'Share Tech Mono', monospace; font-size: 12px; }
+  .habit-streak-num { color: var(--accent-gold); }
+  .habit-check-box { width: 22px; height: 22px; border: 1px solid var(--border-glow); display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.3s; }
+  .habit-row.done .habit-check-box { background: rgba(0,200,255,0.2); border-color: var(--accent-cyan); color: var(--accent-cyan); box-shadow: 0 0 8px rgba(0,200,255,0.3); }
+
+  /* ─── CORNERS DECOR ─── */
+  .panel::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 12px; height: 12px;
+    border-right: 1px solid var(--accent-blue);
+    border-bottom: 1px solid var(--accent-blue);
+    opacity: 0.4;
+  }
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 12px; height: 12px;
+    border-left: 1px solid var(--accent-blue);
+    border-top: 1px solid var(--accent-blue);
+    opacity: 0.4;
+  }
+
+  /* ─── PLAYER NAME ─── */
+  .player-name-display {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 2px;
+  }
+  .player-title {
+    font-size: 11px;
+    color: var(--text-secondary);
+    letter-spacing: 3px;
+    margin-top: 2px;
+  }
+
+  .points-display {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--accent-gold);
+    border: 1px solid rgba(255,204,68,0.3);
+    padding: 4px 12px;
+  }
+
+  .empty-log {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-dim);
+    font-size: 13px;
+    letter-spacing: 2px;
+    font-family: 'Orbitron', monospace;
+  }
+
+  /* Alert on stat point allocation */
+  .stat-point-indicator {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--accent-gold);
+    text-align: right;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+  }
+
+  .sep {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-glow), transparent);
+    margin: 12px 0;
+    opacity: 0.5;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- NOTIFICATION -->
+  <div class="notif" id="notif"></div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div>
+        <div class="system-logo">SYSTEM</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:3px;margin-top:2px">AWAKENED // v2.0</div>
+      </div>
+      <div class="system-badge">● ACTIVE</div>
+    </div>
+    <div style="text-align:center">
+      <div class="player-name-display" id="player-name-display">HUNTER</div>
+      <div class="player-title" id="player-title">E-RANK BEGINNER</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+      <div class="player-rank-badge" id="rank-badge" style="color:var(--rank-e);border-color:var(--rank-e);">E</div>
+      <div class="points-display" id="stat-pts-header">STAT PTS: 0</div>
+    </div>
+  </div>
+
+  <!-- LEVEL / XP -->
+  <div class="level-section panel">
+    <div class="level-row">
+      <div>
+        <div class="level-label">CURRENT LEVEL</div>
+        <div class="level-num" id="level-display">1</div>
+      </div>
+      <div class="xp-info">
+        <div class="xp-label">EXPERIENCE</div>
+        <div class="xp-num" id="xp-display">0 / 100 XP</div>
+      </div>
+    </div>
+    <div class="xp-bar-track">
+      <div class="xp-bar-fill" id="xp-bar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+
+    <!-- STATS -->
+    <div class="panel">
+      <div class="panel-title">ATTRIBUTES</div>
+      <div class="stat-point-indicator" id="stat-pts-panel">AVAILABLE POINTS: 0</div>
+
+      <div class="stat-row stat-str">
+        <div class="stat-header">
+          <span class="stat-name">STR <span style="color:var(--text-dim);font-size:9px">STRENGTH</span></span>
+          <span class="stat-value" id="stat-str-val">10</span>
+        </div>
+        <div class="stat-track"><div class="stat-fill" id="stat-str-bar" style="width:10%"></div></div>
+        <div class="stat-controls">
+          <button class="stat-btn" onclick="adjustStat('str', -1)">−</button>
+          <button class="stat-btn" onclick="adjustStat('str', 1)">+</button>
+        </div>
+      </div>
+
+      <div class="stat-row stat-vit">
+        <div class="stat-header">
+          <span class="stat-name">VIT <span style="color:var(--text-dim);font-size:9px">VITALITY</span></span>
+          <span class="stat-value" id="stat-vit-val">10</span>
+        </div>
+        <div class="stat-track"><div class="stat-fill" id="stat-vit-bar" style="width:10%"></div></div>
+        <div class="stat-controls">
+          <button class="stat-btn" onclick="adjustStat('vit', -1)">−</button>
+          <button class="stat-btn" onclick="adjustStat('vit', 1)">+</button>
+        </div>
+      </div>
+
+      <div class="stat-row stat-agi">
+        <div class="stat-header">
+          <span class="stat-name">AGI <span style="color:var(--text-dim);font-size:9px">AGILITY</span></span>
+          <span class="stat-value" id="stat-agi-val">10</span>
+        </div>
+        <div class="stat-track"><div class="stat-fill" id="stat-agi-bar" style="width:10%"></div></div>
+        <div class="stat-controls">
+          <button class="stat-btn" onclick="adjustStat('agi', -1)">−</button>
+          <button class="stat-btn" onclick="adjustStat('agi', 1)">+</button>
+        </div>
+      </div>
+
+      <div class="stat-row stat-int">
+        <div class="stat-header">
+          <span class="stat-name">INT <span style="color:var(--text-dim);font-size:9px">INTELLIGENCE</span></span>
+          <span class="stat-value" id="stat-int-val">10</span>
+        </div>
+        <div class="stat-track"><div class="stat-fill" id="stat-int-bar" style="width:10%"></div></div>
+        <div class="stat-controls">
+          <button class="stat-btn" onclick="adjustStat('int', -1)">−</button>
+          <button class="stat-btn" onclick="adjustStat('int', 1)">+</button>
+        </div>
+      </div>
+
+      <div class="stat-row stat-per">
+        <div class="stat-header">
+          <span class="stat-name">PER <span style="color:var(--text-dim);font-size:9px">PERCEPTION</span></span>
+          <span class="stat-value" id="stat-per-val">10</span>
+        </div>
+        <div class="stat-track"><div class="stat-fill" id="stat-per-bar" style="width:10%"></div></div>
+        <div class="stat-controls">
+          <button class="stat-btn" onclick="adjustStat('per', -1)">−</button>
+          <button class="stat-btn" onclick="adjustStat('per', 1)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RANK SYSTEM -->
+    <div class="panel">
+      <div class="panel-title">HUNTER RANK</div>
+
+      <div class="rank-grid" id="rank-grid">
+        <div class="rank-box" onclick="setRank('E')" data-rank="E">
+          <span class="rank-letter" style="color:var(--rank-e)">E</span>
+          <div class="rank-label">LV 1-9</div>
+        </div>
+        <div class="rank-box" onclick="setRank('D')" data-rank="D">
+          <span class="rank-letter" style="color:var(--rank-d)">D</span>
+          <div class="rank-label">LV 10-19</div>
+        </div>
+        <div class="rank-box" onclick="setRank('C')" data-rank="C">
+          <span class="rank-letter" style="color:var(--rank-c)">C</span>
+          <div class="rank-label">LV 20-29</div>
+        </div>
+        <div class="rank-box" onclick="setRank('B')" data-rank="B">
+          <span class="rank-letter" style="color:var(--rank-b)">B</span>
+          <div class="rank-label">LV 30-39</div>
+        </div>
+        <div class="rank-box" onclick="setRank('A')" data-rank="A">
+          <span class="rank-letter" style="color:var(--rank-a)">A</span>
+          <div class="rank-label">LV 40-49</div>
+        </div>
+        <div class="rank-box" onclick="setRank('S')" data-rank="S">
+          <span class="rank-letter" style="color:var(--rank-s)">S</span>
+          <div class="rank-label">LV 50+</div>
+        </div>
+        <div class="rank-box" onclick="setRank('SS')" data-rank="SS">
+          <span class="rank-letter" style="color:var(--rank-ss);font-size:16px">SS</span>
+          <div class="rank-label">MONARCH</div>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.7;font-family:'Share Tech Mono',monospace">
+        Ranks unlock as you level up.<br>
+        Earn XP by completing quests and daily habits.<br>
+        Allocate stat points to grow stronger.
+      </div>
+
+      <div class="sep"></div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:12px;color:var(--text-secondary);letter-spacing:1px">PLAYER NAME:</span>
+        <input class="sys-input" id="name-input" placeholder="Enter hunter name..." style="flex:1;min-width:120px;font-size:13px;padding:6px 10px" maxlength="20">
+        <button class="sys-btn" style="font-size:10px;padding:6px 12px" onclick="setPlayerName()">SET</button>
+      </div>
+    </div>
+
+    <!-- QUESTS -->
+    <div class="panel full-width">
+      <div class="panel-title">QUEST BOARD</div>
+
+      <div id="quest-list"></div>
+
+      <div class="sep"></div>
+      <div style="font-size:11px;color:var(--text-dim);letter-spacing:2px;margin-bottom:8px;font-family:'Orbitron',monospace">NEW QUEST</div>
+      <div class="add-quest-form">
+        <input class="sys-input" id="quest-input" placeholder="Quest name..." maxlength="60">
+        <select class="sys-select" id="quest-type">
+          <option value="fitness">WORKOUT</option>
+          <option value="study">STUDY</option>
+          <option value="habit">HABIT</option>
+        </select>
+        <input class="sys-input" id="quest-xp" type="number" min="5" max="500" value="20" style="width:80px">
+        <button class="sys-btn" onclick="addQuest()">+ ADD</button>
+      </div>
+    </div>
+
+    <!-- DAILY HABITS -->
+    <div class="panel">
+      <div class="panel-title">DAILY MISSIONS</div>
+      <div id="habit-list"></div>
+      <div class="sep"></div>
+      <div style="display:flex;gap:8px">
+        <input class="sys-input" id="habit-input" placeholder="Add daily mission..." style="flex:1" maxlength="40">
+        <button class="sys-btn" style="font-size:10px" onclick="addHabit()">+ ADD</button>
+      </div>
+    </div>
+
+    <!-- ACTIVITY LOG -->
+    <div class="panel">
+      <div class="panel-title">ACTIVITY LOG</div>
+      <div class="activity-log" id="activity-log">
+        <div class="empty-log">NO RECORDS YET</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+let state = {
+  playerName: 'HUNTER',
+  level: 1,
+  xp: 0,
+  xpNeeded: 100,
+  statPoints: 0,
+  rank: 'E',
+  stats: { str: 10, vit: 10, agi: 10, int: 10, per: 10 },
+  quests: [
+    { id: 1, name: '100 Push-ups', type: 'fitness', xp: 25, completed: false },
+    { id: 2, name: 'Study 1 hour of focus session', type: 'study', xp: 30, completed: false },
+    { id: 3, name: 'Morning stretching routine', type: 'fitness', xp: 15, completed: false },
+    { id: 4, name: 'Read 20 pages', type: 'study', xp: 20, completed: false },
+  ],
+  habits: [
+    { id: 1, name: 'Wake up before 6AM', streak: 0, done: false },
+    { id: 2, name: '2L of water daily', streak: 0, done: false },
+    { id: 3, name: 'No social media until noon', streak: 0, done: false },
+  ],
+  log: [],
+  nextQuestId: 5,
+  nextHabitId: 4,
+};
+
+const RANK_COLORS = { E:'--rank-e', D:'--rank-d', C:'--rank-c', B:'--rank-b', A:'--rank-a', S:'--rank-s', SS:'--rank-ss' };
+const RANK_TITLES = {
+  E:'E-RANK BEGINNER', D:'D-RANK HUNTER', C:'C-RANK HUNTER',
+  B:'B-RANK ELITE', A:'A-RANK MASTER', S:'S-RANK HUNTER', SS:'SHADOW MONARCH'
+};
+
+// ── RENDER ──
+function render() {
+  // Level/XP
+  document.getElementById('level-display').textContent = state.level;
+  document.getElementById('xp-display').textContent = `${state.xp} / ${state.xpNeeded} XP`;
+  document.getElementById('xp-bar').style.width = Math.min(100, Math.round((state.xp / state.xpNeeded) * 100)) + '%';
+
+  // Rank badge
+  const rankColor = `var(${RANK_COLORS[state.rank]})`;
+  const badge = document.getElementById('rank-badge');
+  badge.textContent = state.rank;
+  badge.style.color = rankColor;
+  badge.style.borderColor = rankColor;
+  badge.style.textShadow = `0 0 20px ${rankColor}`;
+
+  // Rank grid highlight
+  document.querySelectorAll('.rank-box').forEach(b => {
+    const r = b.dataset.rank;
+    const col = `var(${RANK_COLORS[r]})`;
+    b.classList.toggle('active', r === state.rank);
+    if (r === state.rank) {
+      b.style.borderColor = col;
+      b.style.boxShadow = `0 0 12px ${col.replace('var(', '').replace(')', '')}, inset 0 0 8px rgba(0,0,0,0.5)`;
+    } else {
+      b.style.borderColor = '';
+      b.style.boxShadow = '';
+    }
+  });
+
+  // Player name & title
+  document.getElementById('player-name-display').textContent = state.playerName;
+  document.getElementById('player-title').textContent = RANK_TITLES[state.rank];
+
+  // Stats
+  const MAX_STAT = 100;
+  ['str','vit','agi','int','per'].forEach(s => {
+    const val = state.stats[s];
+    document.getElementById(`stat-${s}-val`).textContent = val;
+    document.getElementById(`stat-${s}-bar`).style.width = Math.min(100, val) + '%';
+  });
+
+  // Stat points
+  const pts = state.statPoints;
+  document.getElementById('stat-pts-panel').textContent = `AVAILABLE POINTS: ${pts}`;
+  document.getElementById('stat-pts-header').textContent = `STAT PTS: ${pts}`;
+
+  // Quests
+  const ql = document.getElementById('quest-list');
+  if (state.quests.length === 0) {
+    ql.innerHTML = '<div class="empty-log">NO ACTIVE QUESTS</div>';
+  } else {
+    ql.innerHTML = state.quests.map(q => `
+      <div class="quest-item ${q.completed ? 'completed' : ''}" onclick="toggleQuest(${q.id})">
+        <div class="quest-check">${q.completed ? '✓' : ''}</div>
+        <div>
+          <div class="quest-name">${q.name}</div>
+          <div class="quest-meta">
+            <span class="quest-tag tag-${q.type}">${q.type.toUpperCase()}</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <div class="quest-xp">+${q.xp} XP</div>
+          ${!q.completed ? `<button class="sys-btn danger" style="font-size:9px;padding:3px 8px" onclick="removeQuest(event,${q.id})">DEL</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Habits
+  const hl = document.getElementById('habit-list');
+  hl.innerHTML = state.habits.map(h => `
+    <div class="habit-row ${h.done ? 'done' : ''}" onclick="toggleHabit(${h.id})">
+      <div>
+        <div class="habit-name">${h.name}</div>
+        <div class="habit-streak">Streak: <span class="habit-streak-num">${h.streak}</span> days</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="sys-btn danger" style="font-size:9px;padding:3px 8px;pointer-events:auto" onclick="removeHabit(event,${h.id})">DEL</button>
+        <div class="habit-check-box">${h.done ? '✓' : ''}</div>
+      </div>
+    </div>
+  `).join('');
+
+  // Log
+  const logEl = document.getElementById('activity-log');
+  if (state.log.length === 0) {
+    logEl.innerHTML = '<div class="empty-log">NO RECORDS YET</div>';
+  } else {
+    logEl.innerHTML = state.log.slice().reverse().slice(0, 20).map(l => `
+      <div class="log-entry">
+        <span class="log-time">${l.time}</span>
+        <span class="log-icon" style="background:${l.color}"></span>
+        <span class="log-text">${l.text}</span>
+        ${l.xp ? `<span class="log-xp">+${l.xp}XP</span>` : ''}
+      </div>
+    `).join('');
+  }
+}
+
+// ── NOTIFICATIONS ──
+function notify(msg) {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.classList.add('show');
+  setTimeout(() => n.classList.remove('show'), 3000);
+}
+
+// ── LOG ──
+function addLog(text, color, xp) {
+  const now = new Date();
+  const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  state.log.push({ text, color, xp, time });
+  if (state.log.length > 100) state.log.shift();
+}
+
+// ── XP & LEVEL UP ──
+function gainXP(amount, source) {
+  state.xp += amount;
+  addLog(source, '#1a6aff', amount);
+  checkLevelUp();
+  render();
+}
+
+function checkLevelUp() {
+  while (state.xp >= state.xpNeeded) {
+    state.xp -= state.xpNeeded;
+    state.level++;
+    state.xpNeeded = Math.round(100 * Math.pow(1.15, state.level - 1));
+    state.statPoints += 3;
+    updateRankFromLevel();
+    notify(`⚡ LEVEL UP! You are now Level ${state.level}`);
+    addLog(`Reached Level ${state.level}!`, '#ffcc44', null);
+  }
+}
+
+function updateRankFromLevel() {
+  const lv = state.level;
+  if (lv >= 50) { if (state.rank !== 'SS') setRankSilent('S'); }
+  else if (lv >= 40) setRankSilent('A');
+  else if (lv >= 30) setRankSilent('B');
+  else if (lv >= 20) setRankSilent('C');
+  else if (lv >= 10) setRankSilent('D');
+  else setRankSilent('E');
+}
+
+function setRankSilent(r) { state.rank = r; }
+
+// ── RANK ──
+function setRank(r) {
+  state.rank = r;
+  notify(`RANK SET: ${r}-RANK`);
+  addLog(`Rank changed to ${r}-Rank`, `var(${RANK_COLORS[r]})`, null);
+  render();
+}
+
+// ── STATS ──
+function adjustStat(stat, delta) {
+  if (delta > 0) {
+    if (state.statPoints <= 0) { notify('NO STAT POINTS AVAILABLE'); return; }
+    state.stats[stat] = Math.min(100, state.stats[stat] + 1);
+    state.statPoints--;
+    addLog(`${stat.toUpperCase()} increased to ${state.stats[stat]}`, '#aa66ff', null);
+  } else {
+    if (state.stats[stat] <= 1) return;
+    state.stats[stat]--;
+    state.statPoints++;
+    addLog(`${stat.toUpperCase()} decreased to ${state.stats[stat]}`, '#666', null);
+  }
+  render();
+}
+
+// ── QUESTS ──
+function toggleQuest(id) {
+  const q = state.quests.find(x => x.id === id);
+  if (!q) return;
+  if (q.completed) return;
+  q.completed = true;
+  gainXP(q.xp, `Quest completed: ${q.name}`);
+  notify(`QUEST COMPLETE: ${q.name} (+${q.xp} XP)`);
+  // Stat bonus based on type
+  if (q.type === 'fitness') { state.stats.str = Math.min(100, state.stats.str + 1); state.stats.vit = Math.min(100, state.stats.vit + 1); }
+  if (q.type === 'study')   { state.stats.int = Math.min(100, state.stats.int + 1); state.stats.per = Math.min(100, state.stats.per + 1); }
+  if (q.type === 'habit')   { state.stats.agi = Math.min(100, state.stats.agi + 1); }
+  render();
+}
+
+function removeQuest(e, id) {
+  e.stopPropagation();
+  state.quests = state.quests.filter(q => q.id !== id);
+  render();
+}
+
+function addQuest() {
+  const name = document.getElementById('quest-input').value.trim();
+  const type = document.getElementById('quest-type').value;
+  const xp   = Math.max(5, Math.min(500, parseInt(document.getElementById('quest-xp').value) || 20));
+  if (!name) { notify('ENTER QUEST NAME'); return; }
+  state.quests.push({ id: state.nextQuestId++, name, type, xp, completed: false });
+  document.getElementById('quest-input').value = '';
+  addLog(`New quest: ${name}`, '#00c8ff', null);
+  render();
+}
+
+// ── HABITS ──
+function toggleHabit(id) {
+  const h = state.habits.find(x => x.id === id);
+  if (!h) return;
+  h.done = !h.done;
+  if (h.done) {
+    h.streak++;
+    gainXP(15 + h.streak * 2, `Daily mission: ${h.name}`);
+    notify(`MISSION DONE: ${h.name} (+${15 + h.streak * 2} XP)`);
+    state.stats.agi = Math.min(100, state.stats.agi + 1);
+  } else {
+    h.streak = Math.max(0, h.streak - 1);
+    addLog(`Mission undone: ${h.name}`, '#444', null);
+  }
+  render();
+}
+
+function removeHabit(e, id) {
+  e.stopPropagation();
+  state.habits = state.habits.filter(h => h.id !== id);
+  render();
+}
+
+function addHabit() {
+  const name = document.getElementById('habit-input').value.trim();
+  if (!name) { notify('ENTER MISSION NAME'); return; }
+  state.habits.push({ id: state.nextHabitId++, name, streak: 0, done: false });
+  document.getElementById('habit-input').value = '';
+  addLog(`New daily mission: ${name}`, '#44eeff', null);
+  render();
+}
+
+// ── PLAYER NAME ──
+function setPlayerName() {
+  const n = document.getElementById('name-input').value.trim().toUpperCase();
+  if (!n) return;
+  state.playerName = n;
+  document.getElementById('name-input').value = '';
+  notify(`HUNTER NAME SET: ${n}`);
+  render();
+}
+
+// Allow Enter key on inputs
+document.getElementById('quest-input').addEventListener('keydown', e => { if (e.key === 'Enter') addQuest(); });
+document.getElementById('habit-input').addEventListener('keydown', e => { if (e.key === 'Enter') addHabit(); });
+document.getElementById('name-input').addEventListener('keydown', e => { if (e.key === 'Enter') setPlayerName(); });
+
+// ── INIT ──
+addLog('System initialized. Arise, Hunter.', '#1a6aff', null);
+render();
+</script>
+</body>
+</html>
