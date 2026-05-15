@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+env/
+venv/
+.venv/
+.venv313/
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local environment
+.vscode/
+.idea/
+
+# Data and temporary outputs
+Music_Genre_Dataset/
+Music_Testing/
